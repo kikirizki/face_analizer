@@ -91,7 +91,7 @@ while 1:
             continue
 
         b = list(map(int, b))
-        cv2.rectangle(img_raw, (b[0], b[1]), (b[2], b[3]), (0, 0, 255), 2)
+        cv2.rectangle(img_raw, (b[0], b[1]), (b[2], b[3]), (0, 255, 255), 2)
         cx = b[0]
         cy = b[1] + 12
     # break
