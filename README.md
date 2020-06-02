@@ -1,4 +1,4 @@
-# face_analizer
+## Face Analizer
 Deep learning based face recognition, face detection, emotion recognition
 
 When we think about some particular person, very often we imagines his or her face, smile and different unique facial features.
