@@ -11,6 +11,7 @@ Requirements :
 - Flask
 - OpenCV
 
+Todos :
 - [x] Face detection
 - [ ] Emotion recognition
 - [ ] Gender classification
