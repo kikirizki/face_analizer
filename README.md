@@ -5,3 +5,12 @@ When we think about some particular person, very often we imagines his or her fa
 We know how to recognize the person by it's face, understand his emotions, estimate his age, almost with 100% certainly tell his gender.
 Human vision system can do these and many other things with faces very easily.
 Can we do the same with modern artificial intelligence alghorithms, in particular, deep neural networks? 
+
+def product(lst):
+  total = 1
+  for num in lst:
+    total = total * num
+
+  return total
+
+print product([2,2,2])
