@@ -17,7 +17,7 @@ from layers.functions.prior_box import PriorBox
 from utils.box_utils import decode
 from utils.nms_wrapper import nms
 
-parser = argparse.ArgumentParser(description='FaceBoxes')
+parser = argparse.ArgumentParser(description='FaceAnalizer')
 
 parser.add_argument('-m', '--trained_model', default='weights/PlateDetection_epoch_90.pth',
                     type=str, help='Trained state_dict file path to open')
@@ -52,14 +52,13 @@ while 1:
     scale = scale.cuda()
 
     loc, conf = net(img)  # forward pass
-    print("loc shape {}".format(loc.shape))
-    print("conf shape {}".format(conf.shape))
+
 
     priorbox = PriorBox(cfg, image_size=(im_height, im_width))
     priors = priorbox.forward()
     priors = priors.to(device)
     prior_data = priors.data
-    print(scale)
+   
     boxes = decode(loc.data.squeeze(0), prior_data, cfg['variance'])
     boxes = boxes * scale / resize
     boxes = boxes.cpu().numpy()
