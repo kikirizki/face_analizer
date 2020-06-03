@@ -1,12 +1,11 @@
 import torch
 import numpy as np
 from data import cfg
-from layers.functions.prior_box import PriorBox
+from postprocessing.prior_box import PriorBox
 from utils.nms_wrapper import nms
 from utils.box_utils import decode
 
 labels = np.array(['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral'])
-
 
 class FaceDetector:
     def __init__(self, path, args, device='cuda'):

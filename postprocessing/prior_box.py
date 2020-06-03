@@ -1,9 +1,6 @@
-import torch
 from itertools import product as product
-import numpy as np
 from math import ceil
-
-
+import torch
 class PriorBox(object):
     def __init__(self, cfg, image_size=None, phase='train'):
         super(PriorBox, self).__init__()
