@@ -23,7 +23,7 @@ emotion_detector = EmotionRecognizer("traced_models/emotion.pt", args)
 
 cap = cv2.VideoCapture(0)
 device = torch.cuda.current_device()
-face_size = (224,224)
+face_size = (224, 224)
 while 1:
     ret, img_raw = cap.read()
     list_of_detections = face_detector.detect_face(img_raw)
@@ -38,12 +38,11 @@ while 1:
             continue
         detection = list(map(int, detection))
         cv2.rectangle(img_raw, (x1, y1), (x2, y2), (0, 255, 255), 2)
-        h = int(y2 - y1)
-        w = int(x2 - x1)
-        face_only = img_raw[x1:x1 + w, y1:y1 + h]
-        face_only = cv2.resize(face_only, face_size)
-        face_only = torch.tensor(face_only).unsqueeze(0)
-        list_of_emotions, probab = emotion_detector.detect_emotion(face_only)
+
+        cropped_face = img_raw[x1:x2, y1:y2]
+        cropped_face = cv2.resize(cropped_face, face_size)
+        cropped_face = torch.tensor(cropped_face).unsqueeze(0)
+        list_of_emotions, probability = emotion_detector.detect_emotion(cropped_face)
         for emotion in list_of_emotions:
             img_raw = cv2.putText(img_raw, emotion, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX,
                                   1, (255, 255, 255), 1, cv2.LINE_AA)
