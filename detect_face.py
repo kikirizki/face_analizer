@@ -56,3 +56,4 @@ class FaceDetector:
 
         # keep top-K faster NMS
         dets = dets[:self.args.keep_top_k, :]
+        return dets

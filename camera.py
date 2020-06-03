@@ -18,35 +18,34 @@ parser.add_argument('-s', '--show_image', action="store_true", default=False, he
 parser.add_argument('--vis_thres', default=0.5, type=float, help='visualization_threshold')
 args = parser.parse_args()
 
-net = FaceDetector("traced_models/face.pt", args)
+face_detector = FaceDetector("traced_models/face.pt", args)
 emotion_detector = EmotionRecognizer("traced_models/emotion.pt", args)
 
 cap = cv2.VideoCapture(0)
 device = torch.cuda.current_device()
-
+face_size = (224,224)
 while 1:
     ret, img_raw = cap.read()
-    detections = FaceDetector.detect_face(img_raw)
+    list_of_detections = face_detector.detect_face(img_raw)
+    for detection in list_of_detections:
+        x1, y1, x2, y2, confidence = detection
+        x1 = int(x1)
+        x2 = int(x2)
+        y1 = int(y1)
+        y2 = int(y2)
 
-    # show image
-    # if args.show_image:
-    for b in detections:
-        if b[4] < 0.5:
+        if confidence < 0.5:
             continue
-
-        b = list(map(int, b))
-
-        cv2.rectangle(img_raw, (b[0], b[1]), (b[2], b[3]), (0, 255, 255), 2)
-        y = b[0]
-        x = b[1]
-        h = b[2] - b[0]
-        w = b[3] - b[1]
-        face_only = img_raw[x:x + w, y:y + h]
-        face_only = cv2.resize(face_only, (224, 224))
+        detection = list(map(int, detection))
+        cv2.rectangle(img_raw, (x1, y1), (x2, y2), (0, 255, 255), 2)
+        h = int(y2 - y1)
+        w = int(x2 - x1)
+        face_only = img_raw[x1:x1 + w, y1:y1 + h]
+        face_only = cv2.resize(face_only, face_size)
         face_only = torch.tensor(face_only).unsqueeze(0)
         list_of_emotions, probab = emotion_detector.detect_emotion(face_only)
         for emotion in list_of_emotions:
-            img_raw = cv2.putText(img_raw, emotion, (y, x), cv2.FONT_HERSHEY_SIMPLEX,
+            img_raw = cv2.putText(img_raw, emotion, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX,
                                   1, (255, 255, 255), 1, cv2.LINE_AA)
     cv2.imshow('res', img_raw)
     cv2.waitKey(10)
