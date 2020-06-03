@@ -2,12 +2,16 @@ import torch
 import numpy as np
 
 labels = np.array(['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral'])
+
+
 class EmotionRecognizer:
 
-    def __init__(self, path, device='cuda'):
+    def __init__(self, path, args, device='cuda'):
+        self.args = args
         self.device = device
         self.model = torch.jit.load(path)
         self.model.to(device).eval()
+
     def detect_emotion(self, faces):
         if len(faces) > 0:
             faces = faces.permute(0, 3, 1, 2)
