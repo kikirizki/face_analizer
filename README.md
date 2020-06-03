@@ -13,7 +13,7 @@ Requirements :
 
 Todos :
 - [x] Face detection
-- [ ] Emotion recognition
+- [x] Emotion recognition
 - [ ] Gender classification
 - [ ] Age prediction
 - [ ] Onnx support

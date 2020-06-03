@@ -16,7 +16,8 @@ from data import cfg
 from layers.functions.prior_box import PriorBox
 from utils.box_utils import decode
 from utils.nms_wrapper import nms
-
+from emotion import EmotionRecognizer
+    
 parser = argparse.ArgumentParser(description='FaceAnalizer')
 
 parser.add_argument('-m', '--trained_model', default='weights/PlateDetection_epoch_90.pth',
@@ -32,17 +33,15 @@ parser.add_argument('-s', '--show_image', action="store_true", default=False, he
 parser.add_argument('--vis_thres', default=0.5, type=float, help='visualization_threshold')
 args = parser.parse_args()
 
-resize = 1
 net = torch.jit.load("traced_models/face.pt")
+emotion_detector = EmotionRecognizer("traced_models/emotion.pt")
 
 cap = cv2.VideoCapture(0)
 device = torch.cuda.current_device()
+
 while 1:
     ret, img_raw = cap.read()
-    #img_raw = cv2.imread("14_5_2020__13_47_30_raw.jpg")
     img = np.float32(img_raw)
-    if resize != 1:
-        img = cv2.resize(np.float32(img), None, None, fx=resize, fy=resize, interpolation=cv2.INTER_LINEAR)
     im_height, im_width, _ = img.shape
     scale = torch.Tensor([img.shape[1], img.shape[0], img.shape[1], img.shape[0]])
     img -= (104, 117, 123)
@@ -60,7 +59,7 @@ while 1:
     prior_data = priors.data
    
     boxes = decode(loc.data.squeeze(0), prior_data, cfg['variance'])
-    boxes = boxes * scale / resize
+    boxes = boxes * scale 
     boxes = boxes.cpu().numpy()
     scores = conf.squeeze(0).data.cpu().numpy()[:, 1]
 
@@ -90,9 +89,19 @@ while 1:
             continue
 
         b = list(map(int, b))
+        
         cv2.rectangle(img_raw, (b[0], b[1]), (b[2], b[3]), (0, 255, 255), 2)
-        cx = b[0]
-        cy = b[1] + 12
-    # break
+        y = b[0]
+        x = b[1] 
+        h =  b[2]-b[0]
+        w =  b[3]-b[1]
+        face_only=img_raw[x:x+w, y:y+h]
+        face_only = cv2.resize(face_only,(224,224))
+        face_only = torch.tensor(face_only).unsqueeze(0)
+        list_of_emotions, probab = emotion_detector.detect_emotion(face_only)
+        for emotion in list_of_emotions:
+            img_raw = cv2.putText(img_raw, emotion, (y,x), cv2.FONT_HERSHEY_SIMPLEX ,  
+                   1,(255,255,255), 1, cv2.LINE_AA) 
     cv2.imshow('res', img_raw)
+  
     cv2.waitKey(10)
