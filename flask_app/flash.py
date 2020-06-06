@@ -1,3 +1,8 @@
-from importlib import import_module
-import os
-from flask import Flask, render_template, Response
+from flask import flask, render_template, Response
+from camera import Camera
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+	return render_template('index.html')
