@@ -2,10 +2,11 @@ import torch
 import numpy as np
 from data import cfg
 from postprocessing.prior_box import PriorBox
-from utils.nms_wrapper import nms
+from utils.nms import nms
 from utils.box_utils import decode
 
 labels = np.array(['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral'])
+
 
 class FaceDetector:
     def __init__(self, path, args, device='cuda'):
@@ -51,7 +52,8 @@ class FaceDetector:
         # do NMS
         dets = np.hstack((boxes, scores[:, np.newaxis])).astype(np.float32, copy=False)
         # keep = py_cpu_nms(dets, args.nms_threshold)
-        keep = nms(dets, self.args.nms_threshold, force_cpu=self.args.cpu)
+
+        keep = nms(torch.tensor(boxes), torch.tensor(scores), overlap=self.args.nms_threshold)
         dets = dets[keep, :]
 
         # keep top-K faster NMS
