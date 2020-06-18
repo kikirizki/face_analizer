@@ -16,33 +16,50 @@ args = parser.parse_args()
 face_detector = FaceDetector("traced_models/face.pt", args)
 emotion_detector = EmotionRecognizer("traced_models/emotion.pt", args)
 
-cap = cv2.VideoCapture(0)
+
 device = torch.cuda.current_device()
-face_size = (224, 224)
-while 1:
-    ret, img_raw = cap.read()
-    list_of_detections = face_detector.detect_face(img_raw)
-    for detection in list_of_detections:
-        x1, y1, x2, y2, confidence = detection
-        x1 = int(x1)
-        x2 = int(x2)
-        y1 = int(y1)
-        y2 = int(y2)
 
-        if confidence < 0.5:
-            continue
-        detection = list(map(int, detection))
-        cv2.rectangle(img_raw, (x1, y1), (x2, y2), (0, 255, 255), 2)
-        try:
-            cropped_face = img_raw[x1:x2, y1:y2]
-            cropped_face = cv2.resize(cropped_face, face_size)
-            cropped_face = torch.tensor(cropped_face).unsqueeze(0)
-            list_of_emotions, probability = emotion_detector.detect_emotion(cropped_face)
-            for emotion in list_of_emotions:
-                img_raw = cv2.putText(img_raw, emotion, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX,
-                                      1, (255, 255, 255), 1, cv2.LINE_AA)
-        except:
-            print("No face")
 
-    cv2.imshow('res', img_raw)
-    cv2.waitKey(10)
+class VideoCamera(object):
+    def __init__(self):
+        # capturing video
+        self.video = cv2.VideoCapture(0)
+
+    def __del__(self):
+        # releasing camera
+        self.video.release()
+
+    def get_frame(self):
+        # extracting frames
+        ret, frame = self.video.read()
+        list_of_detections = face_detector.detect_face(frame)
+        frame = emotion_detector.recognize_faces(frame, list_of_detections)
+        ret, jpeg = cv2.imencode('.jpg', frame)
+        return jpeg.tobytes()
+
+
+from flask import Flask, render_template, Response
+
+app = Flask(__name__)
+
+
+@app.route('/')
+def index():
+    # rendering webpage
+    return render_template('index.html')
+
+def gen(camera):
+    while True:
+        # get camera frame
+        frame = camera.get_frame()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n') \
+
+@app.route('/video_vid')
+def video_feed():
+    return Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+if __name__ == '__main__':
+    # defining server ip address and port
+    app.run(host='0.0.0.0', port='5000', debug=True)

@@ -16,6 +16,7 @@ class FaceDetector:
 
     def detect_face(self, img_raw):
         img = np.float32(img_raw)
+
         im_height, im_width, _ = img.shape
         scale = torch.Tensor([img.shape[1], img.shape[0], img.shape[1], img.shape[0]])
         img -= (104, 117, 123)
